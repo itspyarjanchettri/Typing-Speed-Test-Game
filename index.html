@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Typing Speed Test</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f7fa;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .game-container {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        width: 100%;
+        max-width: 700px;
+        margin-top: 20px;
+      }
+
+      h1 {
+        color: #4a6fa5;
+        margin-top: 0;
+        text-align: center;
+      }
+
+      .game-description {
+        margin-bottom: 25px;
+        color: #666;
+        line-height: 1.5;
+        text-align: center;
+      }
+
+      .text-display {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 20px;
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        min-height: 150px;
+        position: relative;
+      }
+
+      .text-display span {
+        position: relative;
+      }
+
+      .text-display span.current {
+        background-color: #e3f2fd;
+      }
+
+      .text-display span.correct {
+        color: #4caf50;
+      }
+
+      .text-display span.incorrect {
+        color: #f44336;
+        text-decoration: underline;
+      }
+
+      .input-container {
+        margin-bottom: 20px;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 18px;
+        resize: none;
+        height: 100px;
+        font-family: inherit;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #4a6fa5;
+      }
+
+      .stats-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .stat-box {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 15px;
+        text-align: center;
+        flex: 1;
+        margin: 0 10px 10px 0;
+        min-width: 120px;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4a6fa5;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      button {
+        background-color: #4a6fa5;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 12px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin: 0 10px;
+      }
+
+      button:hover {
+        background-color: #3a5a8c;
+      }
+
+      button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+
+      button.start-btn {
+        background-color: #4caf50;
+      }
+
+      button.start-btn:hover {
+        background-color: #3d8b40;
+      }
+
+      .difficulty-selector {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .difficulty-selector button {
+        background-color: #e0e0e0;
+        color: #333;
+        border: none;
+        padding: 8px 15px;
+        margin: 0 5px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .difficulty-selector button.active {
+        background-color: #4a6fa5;
+        color: white;
+      }
+
+      .result-container {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 20px;
+        margin-top: 20px;
+        text-align: center;
+        display: none;
+      }
+
+      .result-title {
+        font-size: 20px;
+        color: #4a6fa5;
+        margin-bottom: 15px;
+      }
+
+      .result-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+      }
+
+      .result-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .result-value {
+        font-size: 28px;
+        font-weight: bold;
+        color: #4a6fa5;
+        margin-top: 5px;
+      }
+
+      .progress-bar {
+        height: 6px;
+        background-color: #e0e0e0;
+        border-radius: 3px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .progress {
+        height: 100%;
+        background-color: #4a6fa5;
+        width: 0%;
+        transition: width 0.3s;
+      }
+
+      .timer {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #4a6fa5;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="game-container">
+      <h1>Typing Speed Test</h1>
+
+      <p class="game-description">
+        Type the text as fast and accurately as you can. Your WPM (Words Per
+        Minute) will be calculated based on your speed and accuracy.
+      </p>
+
+      <div class="difficulty-selector">
+        <button id="easy-btn" class="active">Easy</button>
+        <button id="medium-btn">Medium</button>
+        <button id="hard-btn">Hard</button>
+      </div>
+
+      <div class="text-display" id="text-display">
+        <div class="timer" id="timer">60s</div>
+        Click "Start" to begin the test.
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+      </div>
+
+      <div class="input-container">
+        <textarea
+          id="typing-input"
+          placeholder="Click 'Start' and then type here..."
+          disabled
+        ></textarea>
+      </div>
+
+      <div class="stats-container">
+        <div class="stat-box">
+          <div class="stat-label">Time</div>
+          <div class="stat-value" id="time-display">60s</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">WPM</div>
+          <div class="stat-value" id="wpm-display">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Accuracy</div>
+          <div class="stat-value" id="accuracy-display">0%</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="start-btn" id="start-btn">Start</button>
+        <button id="reset-btn" disabled>Reset</button>
+      </div>
+
+      <div class="result-container" id="result-container">
+        <div class="result-title">Test Complete!</div>
+        <div class="result-stats">
+          <div class="result-stat">
+            <span>Final WPM</span>
+            <span class="result-value" id="final-wpm">0</span>
+          </div>
+          <div class="result-stat">
+            <span>Accuracy</span>
+            <span class="result-value" id="final-accuracy">0%</span>
+          </div>
+        </div>
+        <button id="try-again-btn">Try Again</button>
+      </div>
+    </div>
+
+    <script>
+      // Game variables
+      const EASY_TEXTS = [
+        "The quick brown fox jumps over the lazy dog. This sentence contains all the letters in the English alphabet.",
+        "Programming is the process of creating a set of instructions that tell a computer how to perform a task.",
+        "Reading books can expand your vocabulary and improve your writing skills. It's a great way to learn new things.",
+        "The sun rises in the east and sets in the west. This is due to the Earth's rotation on its axis.",
+        "Water is essential for life. It makes up about 60% of the human body and is involved in many bodily functions.",
+      ];
+
+      const MEDIUM_TEXTS = [
+        "The internet has revolutionized the way we communicate, work, and access information. It has connected people from all over the world and made it possible to share ideas and knowledge instantly.",
+        "Climate change is one of the most significant challenges facing our planet today. It is caused by the increase of greenhouse gases in the atmosphere, which trap heat and cause global temperatures to rise.",
+        "Artificial intelligence is transforming many industries, from healthcare to transportation. It involves creating computer systems that can perform tasks that normally require human intelligence.",
+        "The human brain is an incredibly complex organ that controls all our thoughts, feelings, and actions. It consists of about 86 billion neurons that communicate with each other through electrical and chemical signals.",
+        "Exercise is important for both physical and mental health. Regular physical activity can help prevent chronic diseases, improve mood, and increase longevity.",
+      ];
+
+      const HARD_TEXTS = [
+        "Quantum computing is an emerging field that uses quantum-mechanical phenomena, such as superposition and entanglement, to perform operations on data. Quantum computers use quantum bits or qubits, which can exist in multiple states simultaneously, allowing them to process vast amounts of information in parallel.",
+        "The theory of relativity, developed by Albert Einstein, revolutionized our understanding of space, time, and gravity. It consists of two parts: the special theory of relativity, which deals with objects moving at constant speeds, and the general theory of relativity, which describes gravity as the curvature of spacetime caused by mass and energy.",
+        "Blockchain technology is a distributed ledger system that allows for secure, transparent, and tamper-proof record-keeping. It is the underlying technology behind cryptocurrencies like Bitcoin, but has applications in many other areas, including supply chain management, voting systems, and digital identity verification.",
+        "Neuroplasticity refers to the brain's ability to reorganize itself by forming new neural connections throughout life. This ability allows the neurons in the brain to compensate for injury and disease and to adjust their activities in response to new situations or changes in the environment.",
+        "The human microbiome is the collection of microorganisms that live in and on the human body. These microorganisms, which include bacteria, viruses, and fungi, play important roles in digestion, immunity, and other aspects of human health. The composition of the microbiome can be affected by diet, lifestyle, and environmental factors.",
+      ];
+
+      let currentText = "";
+      let typedText = "";
+      let currentPosition = 0;
+      let startTime = null;
+      let endTime = null;
+      let timerInterval = null;
+      let timeLeft = 60;
+      let gameActive = false;
+      let difficulty = "easy";
+      let totalKeystrokes = 0;
+      let correctKeystrokes = 0;
+      let currentWPM = 0;
+      let currentAccuracy = 0;
+
+      // DOM elements
+      const textDisplay = document.getElementById("text-display");
+      const typingInput = document.getElementById("typing-input");
+      const startBtn = document.getElementById("start-btn");
+      const resetBtn = document.getElementById("reset-btn");
+      const tryAgainBtn = document.getElementById("try-again-btn");
+      const timeDisplay = document.getElementById("time-display");
+      const timerElement = document.getElementById("timer");
+      const wpmDisplay = document.getElementById("wpm-display");
+      const accuracyDisplay = document.getElementById("accuracy-display");
+      const resultContainer = document.getElementById("result-container");
+      const finalWpm = document.getElementById("final-wpm");
+      const finalAccuracy = document.getElementById("final-accuracy");
+      const progressElement = document.getElementById("progress");
+      const easyBtn = document.getElementById("easy-btn");
+      const mediumBtn = document.getElementById("medium-btn");
+      const hardBtn = document.getElementById("hard-btn");
+
+      // Initialize the game
+      function initGame() {
+        // Select a random text based on difficulty
+        const texts =
+          difficulty === "easy"
+            ? EASY_TEXTS
+            : difficulty === "medium"
+            ? MEDIUM_TEXTS
+            : HARD_TEXTS;
+        currentText = texts[Math.floor(Math.random() * texts.length)];
+
+        // Reset game state
+        typedText = "";
+        currentPosition = 0;
+        startTime = null;
+        endTime = null;
+        timeLeft = 60;
+        gameActive = false;
+        totalKeystrokes = 0;
+        correctKeystrokes = 0;
+        currentWPM = 0;
+        currentAccuracy = 0;
+
+        // Update UI
+        textDisplay.innerHTML =
+          '<div class="timer" id="timer">60s</div>' + currentText;
+        typingInput.value = "";
+        typingInput.disabled = true;
+        timeDisplay.textContent = `${timeLeft}s`;
+        timerElement.textContent = `${timeLeft}s`;
+        wpmDisplay.textContent = "0";
+        accuracyDisplay.textContent = "0%";
+        progressElement.style.width = "0%";
+
+        // Reset buttons
+        startBtn.disabled = false;
+        resetBtn.disabled = true;
+
+        // Hide result container
+        resultContainer.style.display = "none";
+
+        // Remove any existing span elements
+        const spans = textDisplay.querySelectorAll("span");
+        spans.forEach((span) => span.remove());
+      }
+
+      // Start the game
+      function startGame() {
+        gameActive = true;
+        startTime = new Date();
+
+        // Enable input
+        typingInput.disabled = false;
+        typingInput.focus();
+
+        // Update buttons
+        startBtn.disabled = true;
+        resetBtn.disabled = false;
+
+        // Start timer
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          timeDisplay.textContent = `${timeLeft}s`;
+          timerElement.textContent = `${timeLeft}s`;
+
+          // Update WPM and accuracy
+          updateStats();
+
+          if (timeLeft <= 0) {
+            endGame();
+          }
+        }, 1000);
+      }
+
+      // Reset the game
+      function resetGame() {
+        clearInterval(timerInterval);
+        initGame();
+      }
+
+      // End the game
+      function endGame() {
+        clearInterval(timerInterval);
+        gameActive = false;
+
+        // Disable input
+        typingInput.disabled = true;
+
+        // Update buttons
+        startBtn.disabled = false;
+        resetBtn.disabled = true;
+
+        // Calculate final stats
+        endTime = new Date();
+        const timeElapsed = (endTime - startTime) / 1000; // in seconds
+        const wordsTyped = typedText.trim().split(/\s+/).length || 1; // avoid division by zero
+        const finalWPM = Math.round((wordsTyped / timeElapsed) * 60);
+
+        // Calculate accuracy
+        const finalAccuracy =
+          totalKeystrokes > 0
+            ? Math.round((correctKeystrokes / totalKeystrokes) * 100)
+            : 100;
+
+        // Update result container
+        finalWpm.textContent = finalWPM;
+        finalAccuracy.textContent = `${finalAccuracy}%`;
+        resultContainer.style.display = "block";
+      }
+
+      // Update WPM and accuracy stats
+      function updateStats() {
+        if (!startTime) return;
+
+        const currentTime = new Date();
+        const timeElapsed = (currentTime - startTime) / 1000; // in seconds
+
+        // Calculate WPM
+        const wordsTyped = typedText.trim().split(/\s+/).length || 1; // avoid division by zero
+        currentWPM = Math.round((wordsTyped / timeElapsed) * 60);
+        wpmDisplay.textContent = currentWPM;
+
+        // Calculate accuracy
+        currentAccuracy =
+          totalKeystrokes > 0
+            ? Math.round((correctKeystrokes / totalKeystrokes) * 100)
+            : 100;
+        accuracyDisplay.textContent = `${currentAccuracy}%`;
+      }
+
+      // Handle typing input
+      function handleTyping(e) {
+        if (!gameActive) return;
+
+        const key = e.key;
+
+        // Handle backspace
+        if (key === "Backspace") {
+          if (currentPosition > 0) {
+            currentPosition--;
+            typedText = typedText.slice(0, -1);
+            updateTextDisplay();
+          }
+          return;
+        }
+
+        // Handle special keys (ignore)
+        if (
+          key === "Shift" ||
+          key === "Control" ||
+          key === "Alt" ||
+          key === "CapsLock" ||
+          key === "Tab" ||
+          key === "Meta"
+        ) {
+          return;
+        }
+
+        // Update typed text
+        typedText += key;
+        currentPosition++;
+        totalKeystrokes++;
+
+        // Check if key is correct
+        if (key === currentText[currentPosition - 1]) {
+          correctKeystrokes++;
+        }
+
+        // Update text display
+        updateTextDisplay();
+
+        // Update progress
+        const progress = (currentPosition / currentText.length) * 100;
+        progressElement.style.width = `${progress}%`;
+
+        // Update stats
+        updateStats();
+
+        // Check if text is complete
+        if (currentPosition >= currentText.length) {
+          endGame();
+        }
+      }
+
+      // Update text display with highlighting
+      function updateTextDisplay() {
+        let html = '<div class="timer" id="timer">' + timeLeft + "s</div>";
+
+        for (let i = 0; i < currentText.length; i++) {
+          let charClass = "";
+
+          if (i < currentPosition) {
+            // Already typed
+            if (i < typedText.length && typedText[i] === currentText[i]) {
+              charClass = "correct";
+            } else {
+              charClass = "incorrect";
+            }
+          } else if (i === currentPosition) {
+            // Current position                    charClass = 'current';
+          }
+
+          html += `<span class="${charClass}">${currentText[i]}</span>`;
+        }
+
+        textDisplay.innerHTML = html;
+      }
+
+      // Event listeners
+      startBtn.addEventListener("click", startGame);
+      resetBtn.addEventListener("click", resetGame);
+      tryAgainBtn.addEventListener("click", () => {
+        resultContainer.style.display = "none";
+        resetGame();
+      });
+
+      typingInput.addEventListener("keydown", handleTyping);
+
+      easyBtn.addEventListener("click", () => {
+        difficulty = "easy";
+        easyBtn.classList.add("active");
+        mediumBtn.classList.remove("active");
+        hardBtn.classList.remove("active");
+        resetGame();
+      });
+
+      mediumBtn.addEventListener("click", () => {
+        difficulty = "medium";
+        easyBtn.classList.remove("active");
+        mediumBtn.classList.add("active");
+        hardBtn.classList.remove("active");
+        resetGame();
+      });
+
+      hardBtn.addEventListener("click", () => {
+        difficulty = "hard";
+        easyBtn.classList.remove("active");
+        mediumBtn.classList.remove("active");
+        hardBtn.classList.add("active");
+        resetGame();
+      });
+
+      // Initialize the game on load
+      initGame();
+    </script>
+  </body>
+</html>
